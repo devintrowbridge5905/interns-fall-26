@@ -1,17 +1,14 @@
-use mini_redis::{client, Result};
+use axum::{
+    routing::get,
+    Router,
+};
 
 #[tokio::main]
-async fn main() -> Result<()> {
-    // Open a connection to the mini-redis address.
-    let mut client = client::connect("127.0.0.1:6379").await?;
+async fn main() {
+    // build our application with a single route
+    let app = Router::new().route("/", get(|| async { "Hello, World!" }));
 
-    // Set the key "hello" with value "world"
-    client.set("hello", "world".into()).await?;
-
-    // Get key "hello"
-    let result = client.get("hello").await?;
-
-    println!("got value from the server; result={:?}", result);
-
-    Ok(())
+    // run our app with hyper, listening globally on port 3000
+    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000").await.unwrap();
+    axum::serve(listener, app).await.unwrap();
 }
